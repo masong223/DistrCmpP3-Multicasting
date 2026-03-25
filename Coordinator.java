@@ -1,7 +1,7 @@
 import java.io.*;
-import java.util.Scanner;
-import java.util.HashMap;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Scanner;
 public class Coordinator {
     public static void main(String[] args) {
         File configFile = new File(args[0]);
