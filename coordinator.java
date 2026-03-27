@@ -50,19 +50,23 @@ public class coordinator {
             while ((message = in.readLine()) != null) {
                 switch (message.split(" ")[0]) {
                     case "register":
+                        out.println("ACK");
                         userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), clientSocket));
                         break;
                     case "deregister":
+                        out.println("ACK");
                         userStatus.remove(Integer.parseInt(message.split(" ")[1]));
                         break;
                     case "disconnect":
+                        out.println("ACK");
                         userStatus.get(Integer.parseInt(message.split(" ")[1])).disconnect();
                         break;
                     case "reconnect":
+                        out.println("ACK");
                         userStatus.get(Integer.parseInt(message.split(" ")[1])).reconnect();
                         break;
                     case "msend":
-                        out.println("Message received: " + message);
+                        out.println("ACK");
                         Path pwd = Path.of("log.txt");
                         try {
                             if (!Files.exists(pwd)) {
