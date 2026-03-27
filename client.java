@@ -4,11 +4,12 @@ import java.util.Scanner;
 
 public static void main(String[] args) {
    File configFile = new File(args[0]);
-   int userId = 0;
-   File logFile = new File(""); //For storing messages
+   int userId;
+   File logFile;
    String[] coordinatorInfo = new String[2]; //machine name, port number
 
-   //Gather configuration information from the file
+
+   
    try (Scanner configReader = new Scanner(configFile)) {
         for (int i = 0; i < 3; i++) {
             if (configReader.hasNextLine()) {
@@ -26,18 +27,9 @@ public static void main(String[] args) {
                 }
             }
         }
-        configReader.close();
+
    } catch (FileNotFoundException e) {
        System.out.println("Configuration file not found: " + args[0]);
    }
-    System.out.println("User ID: " + userId);
-    System.out.println("Log file: " + logFile.getAbsolutePath());
-    System.out.println("Coordinator machine: " + coordinatorInfo[0]);
-    System.out.println("Coordinator port: " + coordinatorInfo[1]);
 
-   //Thread for receiving messages from the user
-
-
-
-   //Thread for receiving messages from the coordinator
 }
