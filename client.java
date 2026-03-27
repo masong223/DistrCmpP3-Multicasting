@@ -52,7 +52,7 @@ public class client {
                 // Command, port #, IP, UID
 
                 if (parts[0].equals("register")) {
-                    //SERVER PARAM CONFIG FOR REGISTER: "register, port #, ip, userId"
+                    // SERVER PARAM CONFIG FOR REGISTER: "register, port #, ip, userId"
                     // Start ThreadB for listening from server
                     int bListenPort = Integer.parseInt(parts[1]);
                     threadInit = new ThreadB(userId, logFile, bListenPort);
@@ -66,14 +66,14 @@ public class client {
                         // Start up connection to server
                         Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
-                        InputStream cIn = coordSocket.getInputStream();
-                        DataInputStream clientIn = new DataInputStream(cIn);
+                        BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
+                        
 
                         // Send command
                         clientOut.println("register " + bListenPort + " " + ip + " " + userId);
 
                         // Wait for ACK from server
-                        String serverResponse = clientIn.readUTF();
+                        String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
                             System.out.println("Successfully registered");
                         }
@@ -86,13 +86,20 @@ public class client {
                     }
 
                 } else if (parts[0].equals("deregister")) {
-                    //SERVER PARAMETER CONFIG FOR DEREGISTER: "deregister, userId"
+                    // SERVER PARAMETER CONFIG FOR DEREGISTER: "deregister, userId"
                     try {
 
                         Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
+                        BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
+                        
 
                         clientOut.println("deregister " + userId);
+                        
+                        String serverResponse = clientIn.readLine();
+                        if (serverResponse != null && serverResponse.contains("ACK")) {
+                            System.out.println("Successfully deregistered");
+                        }
 
                         // If thread is running (it should be), stop the listener thread (thread b)
                         if (threadInit != null) {
@@ -103,19 +110,20 @@ public class client {
 
                     }
                 } else if (parts[0].equals("disconnect")) {
-                    //SERVER PARAMETER CONFIG FOR DISCONNECT: "disconnect, userId"
+                    // SERVER PARAMETER CONFIG FOR DISCONNECT: "disconnect, userId"
                     try {
                         // Open connection to coordinator
                         Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
-                        DataInputStream clientIn = new DataInputStream(coordSocket.getInputStream());
+                        BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
+
 
                         clientOut.println("disconnect " + userId);
 
                         // Wait for the ACK
-                        String serverResponse = clientIn.readUTF();
+                        String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
-                            System.out.println("Successfully disconnected. Going offline.");
+                            System.out.println("Successfully disconnected");
                         }
 
                         clientOut.close();
@@ -125,16 +133,64 @@ public class client {
                         // Stop thread b
                         if (threadInit != null) {
                             threadInit.stopThreadB();
-                            threadInit = null; // Clear it out until they reconnect
+                            threadInit = null;
                         }
 
                     } catch (IOException e) {
                         System.err.println("Error disconnecting");
                     }
                 } else if (parts[0].equals("reconnect")) {
+                    // SERVER PARAM CONFIG FOR RECONNECT: "reconnect, port #, ip, userId"
+                    int bListenPort = Integer.parseInt(parts[1]);
+                    threadInit = new ThreadB(userId, logFile, bListenPort);
+                    Thread listenerThread = new Thread(threadInit);
+                    listenerThread.start();
+
+                    try {
+                        String ip = InetAddress.getLocalHost().getHostAddress(); // Get IP
+
+                        // Start up connection to server
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
+                        BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
+
+                        // Send command
+                        clientOut.println("reconnect " + bListenPort + " " + ip + " " + userId);
+
+                        // Wait for ACK from server
+                        String serverResponse = clientIn.readLine();
+                        if (serverResponse.contains("ACK")) {
+                            System.out.println("Successfully registered");
+                        }
+
+                        clientOut.close();
+                        clientIn.close();
+                        coordSocket.close();
+                    } catch (IOException e) {
+                        System.err.println("Error connecting to server/obtaining IP");
+                    }
 
                 } else if (parts[0].equals("msend")) {
+                    // SERVER PARAM CONFIG FOR MSEND: "msend"
+                    try {
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
+                        BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
 
+                        // Send command
+                        clientOut.println("msend " + inputToServer.substring(inputToServer.indexOf(" ") + 1));
+
+                        // Wait for ACK from server
+                        String serverResponse = clientIn.readLine();
+                        if (serverResponse.contains("ACK")) {
+                            System.out.println("Successfully send message");
+                        }
+
+                        clientOut.close();
+                        clientIn.close();
+                        coordSocket.close();
+                    } catch (Exception e) {
+                    }
                 }
             }
         }).start();
