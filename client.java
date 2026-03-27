@@ -5,7 +5,7 @@ import java.util.Scanner;
 public class client {
     public static void main(String[] args) {
         File configFile = new File(args[0]);
-        int[] userIdTemp = {0}; // Client id array so I can avoid the issue of making vars in local scope
+        int[] userIdTemp = { 0 }; // Client id array so I can avoid the issue of making vars in local scope
         String logFilePath = ""; // For storing messages
         String[] coordinatorInfo = new String[2]; // machine name, port number
 
@@ -16,7 +16,7 @@ public class client {
                     String line = configReader.nextLine();
                     String[] parts = line.split(" ");
                     if (i == 0) {
-                        userIdTemp[0] = Integer.parseInt(parts[0]); //update with the real userId
+                        userIdTemp[0] = Integer.parseInt(parts[0]); // update with the real userId
                     }
                     if (i == 1) {
                         logFilePath = parts[0]; // Update client log location
@@ -33,7 +33,7 @@ public class client {
             System.exit(0);
         }
 
-        //Escaped local scope issues
+        // Escaped local scope issues
         final File logFile = new File(logFilePath);
         final int userId = userIdTemp[0];
 
@@ -45,39 +45,38 @@ public class client {
         // Thread for sending messages to the server (Thread A)
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
+            ThreadB threadInit = null;
             while (true) {
                 String inputToServer = scanner.nextLine();
                 String[] parts = inputToServer.split(" ");
-                //Command, port #, IP, UID
+                // Command, port #, IP, UID
 
                 if (parts[0].equals("register")) {
-
-                    //Start ThreadB for listening from server
+                    //SERVER PARAM CONFIG FOR REGISTER: "register, port #, ip, userId"
+                    // Start ThreadB for listening from server
                     int bListenPort = Integer.parseInt(parts[1]);
-                    ThreadB threadInit = new ThreadB(userId, logFile, bListenPort);
+                    threadInit = new ThreadB(userId, logFile, bListenPort);
                     Thread listenerThread = new Thread(threadInit);
                     listenerThread.start();
 
-                    //Get local IP
+                    // Get local IP
                     try {
-                        String ip = InetAddress.getLocalHost().getHostAddress(); //Get IP
+                        String ip = InetAddress.getLocalHost().getHostAddress(); // Get IP
 
-                    
-                        //Start up connection to server
+                        // Start up connection to server
                         Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
                         InputStream cIn = coordSocket.getInputStream();
                         DataInputStream clientIn = new DataInputStream(cIn);
 
-                        //Send command
+                        // Send command
                         clientOut.println("register " + bListenPort + " " + ip + " " + userId);
 
-                        //Wait for ACK from server
+                        // Wait for ACK from server
                         String serverResponse = clientIn.readUTF();
                         if (serverResponse.contains("ACK")) {
                             System.out.println("Successfully registered");
                         }
-
 
                         clientOut.close();
                         clientIn.close();
@@ -85,12 +84,53 @@ public class client {
                     } catch (IOException e) {
                         System.err.println("Error connecting to server/obtaining IP");
                     }
-                    
 
                 } else if (parts[0].equals("deregister")) {
+                    //SERVER PARAMETER CONFIG FOR DEREGISTER: "deregister, userId"
+                    try {
 
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
+
+                        clientOut.println("deregister " + userId);
+
+                        // If thread is running (it should be), stop the listener thread (thread b)
+                        if (threadInit != null) {
+                            threadInit.stopThreadB();
+                            threadInit = null;
+                        }
+                    } catch (IOException e) {
+
+                    }
                 } else if (parts[0].equals("disconnect")) {
+                    //SERVER PARAMETER CONFIG FOR DISCONNECT: "disconnect, userId"
+                    try {
+                        // Open connection to coordinator
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
+                        DataInputStream clientIn = new DataInputStream(coordSocket.getInputStream());
 
+                        clientOut.println("disconnect " + userId);
+
+                        // Wait for the ACK
+                        String serverResponse = clientIn.readUTF();
+                        if (serverResponse.contains("ACK")) {
+                            System.out.println("Successfully disconnected. Going offline.");
+                        }
+
+                        clientOut.close();
+                        clientIn.close();
+                        coordSocket.close();
+
+                        // Stop thread b
+                        if (threadInit != null) {
+                            threadInit.stopThreadB();
+                            threadInit = null; // Clear it out until they reconnect
+                        }
+
+                    } catch (IOException e) {
+                        System.err.println("Error disconnecting");
+                    }
                 } else if (parts[0].equals("reconnect")) {
 
                 } else if (parts[0].equals("msend")) {
@@ -101,12 +141,15 @@ public class client {
 
     }
 }
-//Thread B, listening to Coordinator
+
+// Thread B, listening to Coordinator
 class ThreadB implements Runnable {
     int userID;
     File logFile;
-    //String[] coordinatorInfo;
+    // String[] coordinatorInfo;
     int bListenPort;
+    public volatile boolean isRunning = true;
+    ServerSocket serverSocket;
 
     public ThreadB(int userID, File logFile, int bListenPort) {
         this.userID = userID;
@@ -117,18 +160,18 @@ class ThreadB implements Runnable {
     @Override
     public void run() {
         try {
-            ServerSocket serversocket = new ServerSocket(bListenPort); // Serversocket to listen from server
+            serverSocket = new ServerSocket(bListenPort); // Serversocket to listen from server
 
-            FileWriter appender = new FileWriter(logFile, true); //Append mode = true
-            PrintWriter writer = new PrintWriter(appender, true); //AutoFlush = true
+            FileWriter appender = new FileWriter(logFile, true); // Append mode = true
+            PrintWriter writer = new PrintWriter(appender, true); // AutoFlush = true
 
-            while (true) {
+            while (isRunning) {
                 try {
-                    Socket coordinatorSocket = serversocket.accept(); // Bind to coordinator
+                    Socket coordinatorSocket = serverSocket.accept(); // Bind to coordinator
                     Scanner coordIn = new Scanner(coordinatorSocket.getInputStream());
                     if (coordIn.hasNextLine()) {
                         String message = coordIn.nextLine();
-                        writer.println(message); //append message to file
+                        writer.println(message); // append message to file
 
                         // Clean up sockets when task is finished
                         coordIn.close();
@@ -139,9 +182,21 @@ class ThreadB implements Runnable {
                 }
 
             }
-            
+
         } catch (IOException e) {
             System.err.print("Error in thread B " + e);
+        }
+    }
+
+    // Will stop thread B actions by closing the socket.
+    public void stopThreadB() {
+        isRunning = false;
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
