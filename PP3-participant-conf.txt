@@ -1,3 +1,3 @@
 101
 101-message.txt
-odin.cs.uga.edu 5000
+172.20.114.182 5000
