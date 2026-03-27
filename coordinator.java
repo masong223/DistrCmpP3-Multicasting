@@ -50,22 +50,22 @@ public class Coordinator {
                 switch (message.split(" ")[0]) {
                     case "register":
                         userStatus.put(Integer.parseInt(message.split(" ")[2]), true);
-                        String responseReg = "ACK" + message.split("")[2];
+                        String responseReg = "ACK";
                         out.println(responseReg);
                         break;
                     case "deregister":
                         userStatus.remove(Integer.parseInt(message.split(" ")[1]));
-                        String responseDereg = "ACK" + message.split(" ")[1] ;
+                        String responseDereg = "ACK";
                         out.println(responseDereg);
                         break;
                     case "disconnect":
                         userStatus.put(Integer.parseInt(message.split(" ")[1]), false);
-                        String responseDisc = "ACK" + message.split(" ")[1];
+                        String responseDisc = "ACK";
                         out.println(responseDisc);
                         break;
                     case "reconnect":
                         userStatus.put(Integer.parseInt(message.split(" ")[2]), true);
-                        String responseReconnect = "ACK" + message.split(" ")[2];
+                        String responseReconnect = "ACK";
                         out.println(responseReconnect);
                         break;
                     case "msend":
