@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class Coordinator {
+public class coordinator {
     public static void main(String[] args) {
         File configFile = new File(args[0]);
         int port = 0;
