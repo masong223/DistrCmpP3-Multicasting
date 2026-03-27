@@ -51,7 +51,7 @@ public class coordinator {
                 switch (message.split(" ")[0]) {
                     case "register":
                         out.println("ACK");
-                        userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), clientSocket));
+                        userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), new Socket(message.split(" ")[2], Integer.parseInt(message.split(" ")[1]))));
                         break;
                     case "deregister":
                         out.println("ACK");
