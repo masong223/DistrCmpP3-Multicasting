@@ -83,7 +83,7 @@ public class coordinator {
                             BufferedReader logReader = new BufferedReader(new FileReader("log.txt"));
                             String logLine;
                             while ((logLine = logReader.readLine()) != null) {
-                               if (Instant.parse(logLine.split(" ")[]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[2]).isAfter(Instant.now().minusSeconds(threshold))) {
+                               if (Instant.parse(logLine.split(" ")[1]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[1]).isAfter(Instant.now().minusSeconds(threshold))) {
                                     out.println(logLine);
                                 }
                             }
