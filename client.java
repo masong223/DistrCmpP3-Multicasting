@@ -220,19 +220,21 @@ class ThreadB implements Runnable {
 
             FileWriter appender = new FileWriter(logFile, true); // Append mode = true
             PrintWriter writer = new PrintWriter(appender, true); // AutoFlush = true
-
+            System.out.println("Thread B started, listening for messages from coordinator on port " + bListenPort);
             while (isRunning) {
                 try {
                     Socket coordinatorSocket = serverSocket.accept(); // Bind to coordinator
                     Scanner coordIn = new Scanner(coordinatorSocket.getInputStream());
+                    System.out.println("Thread B connected to coordinator for incoming message");
                     while (isRunning && coordIn.hasNextLine()) {
                         String message = coordIn.nextLine();
                         writer.println(message); // append message to file
 
                         // Clean up sockets when task is finished
+                        
+                    }
                         coordIn.close();
                         coordinatorSocket.close();
-                    }
                 } catch (IOException e) {
                     // Error in message reception or socket acceptance
                 }
