@@ -32,11 +32,12 @@ public class coordinator {
             System.out.println("Configuration file not found: " + args[0]);
         }
         int listenerPort = port;
+        int finalThreshold = threshold;
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(listenerPort)) {
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
-                    new Thread(() -> handleClient(clientSocket)).start();
+                    new Thread(() -> handleClient(clientSocket, finalThreshold)).start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -44,7 +45,7 @@ public class coordinator {
         }).start();
     }
 
-    private static void handleClient(Socket clientSocket) {
+    private static void handleClient(Socket clientSocket, int threshold) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
             String message;
@@ -78,7 +79,19 @@ public class coordinator {
                         Participant user = userStatus.get(uid);
                         user.updateConnection(newPort, newIp);
                         user.reconnect();
-
+                        try {
+                            BufferedReader logReader = new BufferedReader(new FileReader("log.txt"));
+                            String logLine;
+                            while ((logLine = logReader.readLine()) != null) {
+                               if (Instant.parse(logLine.split(" ")[1]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[1]).isAfter(Instant.now().minusSeconds(threshold))) {
+                                    out.println(logLine);
+                                }
+                            }
+                        } 
+                        catch (IOException e) {
+                            System.out.println("Error reading log file: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                         break;
                     case "msend":
                         out.println("ACK");
