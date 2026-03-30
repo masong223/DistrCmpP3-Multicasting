@@ -1,11 +1,11 @@
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Scanner;
-import java.time.Instant;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class coordinator {
     private static ConcurrentHashMap<Integer, Participant> userStatus = new ConcurrentHashMap<>();
@@ -48,10 +48,16 @@ public class coordinator {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
             String message;
             while ((message = in.readLine()) != null) {
+                String[] parts = message.split(" "); //UPDATE SUBSEQUENT METHODS WITH THIS ARRAY LATER
                 switch (message.split(" ")[0]) {
                     case "register":
                         out.println("ACK");
-                        userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), new Socket(message.split(" ")[2], Integer.parseInt(message.split(" ")[1]))));
+                        String userIp = clientSocket.getInetAddress().getHostAddress();
+                        String realIp = clientSocket.getInetAddress().getHostAddress();
+                        int userId = Integer.parseInt(parts[3]);
+                        int bPort = Integer.parseInt(parts[1]);
+                        
+                        userStatus.put(userId, new Participant(userId, bPort, realIp));
                         break;
                     case "deregister":
                         out.println("ACK");
@@ -81,13 +87,9 @@ public class coordinator {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        userStatus.forEach((userId, participant) -> {
-                            if (participant.isConnected()) {
-                                try (PrintWriter participantOut = new PrintWriter(participant.getSocket().getOutputStream(), true)) {
-                                    participantOut.println("Message: " + text);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                        userStatus.forEach((id, participant) -> {
+                            if (participant.isConnected() && participant.outStream != null) {
+                                participant.outStream.println("msend " + text);
                             }
                         });
                         break;
@@ -105,13 +107,23 @@ public class coordinator {
         private boolean isConnected = true;
         private Instant lastDisconnect;
         private Socket socket;
+        private PrintWriter outStream;
 
-        public Participant(int userID, Socket socket) {
+        public Participant(int userID, int port, String ip) {
             this.userID = userID;
-            this.socket = socket;
+            makeConnection(port, ip);
             this.isConnected = true;
         }
-
+        public void makeConnection (int port, String ip){
+            
+            try {
+                this.socket = new Socket(ip, port);
+                this.outStream = new PrintWriter(socket.getOutputStream(), true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Could not connect to client B thread for user " + userID);
+            }
+        }
         public int getUserID() {
             return userID;
         }
