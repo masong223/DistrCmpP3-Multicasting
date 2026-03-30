@@ -114,7 +114,7 @@ public class coordinator {
                                 try {
                                     Socket socket = new Socket(participant.getIp(), participant.getPort());
                                     PrintWriter participantOut = new PrintWriter(socket.getOutputStream(), true);
-                                    participantOut.println("msend " + text);
+                                    participantOut.println(text);
                                     System.out.println("Sent message to user " + id);
                                     socket.close();
                                 } catch (IOException e) {
