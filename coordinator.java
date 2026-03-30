@@ -84,7 +84,10 @@ public class coordinator {
                             String logLine;
                             while ((logLine = logReader.readLine()) != null) {
                                if (Instant.parse(logLine.split(" ")[1]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[1]).isAfter(Instant.now().minusSeconds(threshold))) {
-                                    out.println(logLine);
+                                    Socket socket = new Socket(user.getIp(), user.getPort());
+                                    PrintWriter participantOut = new PrintWriter(socket.getOutputStream(), true);
+                                    participantOut.println(logLine);
+                                    socket.close();
                                 }
                             }
                         } 
