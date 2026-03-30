@@ -51,7 +51,7 @@ public class coordinator {
                 switch (message.split(" ")[0]) {
                     case "register":
                         out.println("ACK");
-                        userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), Integer.parseInt(message.split(" ")[1]), message.split(" ")[2]));
+                        userStatus.put(Integer.parseInt(message.split(" ")[3]), new Participant(Integer.parseInt(message.split(" ")[3]), new Socket(message.split(" ")[2], Integer.parseInt(message.split(" ")[1]))));
                         break;
                     case "deregister":
                         out.println("ACK");
@@ -83,18 +83,10 @@ public class coordinator {
                         }
                         userStatus.forEach((userId, participant) -> {
                             if (participant.isConnected()) {
-                                try {
-                                    Socket participantSocket = new Socket(participant.getIp(), participant.getPort());
-                                    try {
-                                        PrintWriter participantOut = new PrintWriter(participantSocket.getOutputStream(), true);
-                                        participantOut.println("Message: " + text);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    participantSocket.close();
+                                try (PrintWriter participantOut = new PrintWriter(participant.getSocket().getOutputStream(), true)) {
+                                    participantOut.println("Message: " + text);
                                 } catch (IOException e) {
                                     e.printStackTrace();
-                                    return;
                                 }
                             }
                         });
@@ -112,13 +104,11 @@ public class coordinator {
         private int userID = 0;
         private boolean isConnected = true;
         private Instant lastDisconnect;
-        private String ip;
-        private int port;
+        private Socket socket;
 
-        public Participant(int userID, int port, String ip) {
+        public Participant(int userID, Socket socket) {
             this.userID = userID;
-            this.ip = ip;
-            this.port = port;
+            this.socket = socket;
             this.isConnected = true;
         }
 
@@ -140,12 +130,8 @@ public class coordinator {
             this.lastDisconnect = null;
         }
 
-        public int getPort() {
-            return port;
-        }
-
-        public String getIp() {
-            return ip;
+        public Socket getSocket() {
+            return socket;
         }
     }
 }
