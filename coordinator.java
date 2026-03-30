@@ -83,7 +83,7 @@ public class coordinator {
                             BufferedReader logReader = new BufferedReader(new FileReader("log.txt"));
                             String logLine;
                             while ((logLine = logReader.readLine()) != null) {
-                               if (Instant.parse(logLine.split(" ")[1]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[1]).isAfter(Instant.now().minusSeconds(threshold))) {
+                               if (Instant.parse(logLine.split(" ")[]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[2]).isAfter(Instant.now().minusSeconds(threshold))) {
                                     out.println(logLine);
                                 }
                             }
@@ -105,7 +105,7 @@ public class coordinator {
                         }
                         String text = message.substring(6, message.length());
                         try {
-                            Files.writeString(pwd, message + " " + Instant.now() + "\n", StandardOpenOption.APPEND);
+                            Files.writeString(pwd, text + " " + Instant.now() + "\n", StandardOpenOption.APPEND);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
