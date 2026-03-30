@@ -53,12 +53,11 @@ public class coordinator {
                     case "register":
                         out.println("ACK");
                         String userIp = clientSocket.getInetAddress().getHostAddress();
-                        String realIp = clientSocket.getInetAddress().getHostAddress();
                         System.out.println("Received registration from user " + parts[3] + " at IP " + userIp);
                         int userId = Integer.parseInt(parts[3]);
                         int bPort = Integer.parseInt(parts[1]);
                         
-                        userStatus.put(userId, new Participant(userId, bPort, realIp));
+                        userStatus.put(userId, new Participant(userId, bPort, userIp));
                         break;
                     case "deregister":
                         out.println("ACK");
@@ -89,8 +88,16 @@ public class coordinator {
                             e.printStackTrace();
                         }
                         userStatus.forEach((id, participant) -> {
-                            if (participant.isConnected() && participant.outStream != null) {
-                                participant.outStream.println("msend " + text);
+                            if (participant.isConnected()) {
+                                try {
+                                    Socket socket = new Socket(participant.getIp(), participant.getPort());
+                                    PrintWriter participantOut = new PrintWriter(socket.getOutputStream(), true);
+                                    participantOut.println("msend " + text);
+                                    socket.close();
+                                } catch (IOException e) {
+                                    System.out.println("Error sending message to user " + id + ": " + e.getMessage());
+                                    e.printStackTrace();
+                                }
                             }
                         });
                         break;
@@ -107,24 +114,16 @@ public class coordinator {
         private int userID = 0;
         private boolean isConnected = true;
         private Instant lastDisconnect;
-        private Socket socket;
-        private PrintWriter outStream;
+        private String ip;
+        private int port;
 
         public Participant(int userID, int port, String ip) {
             this.userID = userID;
-            makeConnection(port, ip);
+            this.port = port;
+            this.ip = ip;
             this.isConnected = true;
         }
-        public void makeConnection (int port, String ip){
-            
-            try {
-                this.socket = new Socket(ip, port);
-                this.outStream = new PrintWriter(socket.getOutputStream(), true);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Could not connect to client B thread for user " + userID);
-            }
-        }
+        
         public int getUserID() {
             return userID;
         }
@@ -143,8 +142,12 @@ public class coordinator {
             this.lastDisconnect = null;
         }
 
-        public Socket getSocket() {
-            return socket;
+        public String getIp() {
+            return ip;
+        }
+
+        public int getPort() {
+            return port;
         }
     }
 }
