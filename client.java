@@ -225,7 +225,7 @@ class ThreadB implements Runnable {
                 try {
                     Socket coordinatorSocket = serverSocket.accept(); // Bind to coordinator
                     Scanner coordIn = new Scanner(coordinatorSocket.getInputStream());
-                    if (coordIn.hasNextLine()) {
+                    while (isRunning && coordIn.hasNextLine()) {
                         String message = coordIn.nextLine();
                         writer.println(message); // append message to file
 
