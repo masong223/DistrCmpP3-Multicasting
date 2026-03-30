@@ -54,6 +54,7 @@ public class coordinator {
                         out.println("ACK");
                         String userIp = clientSocket.getInetAddress().getHostAddress();
                         String realIp = clientSocket.getInetAddress().getHostAddress();
+                        System.out.println("Received registration from user " + parts[3] + " at IP " + userIp);
                         int userId = Integer.parseInt(parts[3]);
                         int bPort = Integer.parseInt(parts[1]);
                         
