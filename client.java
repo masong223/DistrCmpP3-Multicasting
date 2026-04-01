@@ -171,14 +171,14 @@ public class client {
                     }
 
                 } else if (parts[0].equals("msend")) {
-                    // SERVER PARAM CONFIG FOR MSEND: "msend"
+                    // SERVER PARAM CONFIG FOR MSEND: "msend `message` userId"
                     try {
                         Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
 
                         // Send command
-                        clientOut.println("msend " + inputToServer.substring(inputToServer.indexOf(" ") + 1));
+                        clientOut.println("msend " + inputToServer.substring(inputToServer.indexOf(" ") + 1) + " " + userId);
 
                         // Wait for ACK from server
                         String serverResponse = clientIn.readLine();
