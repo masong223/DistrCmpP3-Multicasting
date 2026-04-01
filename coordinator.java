@@ -70,10 +70,11 @@ public class coordinator {
                         //Bounds check for user before disconnecting, dont want null values
                         if (userStatus.containsKey(Integer.parseInt(message.split(" ")[1]))) {
                             System.out.println("User " + message.split(" ")[1] + " disconnected.");
+                            userStatus.get(Integer.parseInt(message.split(" ")[1])).disconnect();
                         } else {
                             System.out.println("User " + message.split(" ")[1] + " not found for disconnection.");
                         }
-                        userStatus.get(Integer.parseInt(message.split(" ")[1])).disconnect();
+                        
                         break;
                     case "reconnect":
                         out.println("ACK");
