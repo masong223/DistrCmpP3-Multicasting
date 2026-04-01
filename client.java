@@ -123,7 +123,7 @@ public class client {
                         // Wait for the ACK
                         String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
-                            System.out.println("Successfully disconnected");
+                            System.out.println("Successfully disconnected if already registered");
                         }
 
                         clientOut.close();
@@ -160,7 +160,7 @@ public class client {
                         // Wait for ACK from server
                         String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
-                            System.out.println("Successfully registered");
+                            System.out.println("Successfully reconnected if already registered");
                         }
 
                         clientOut.close();
