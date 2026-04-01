@@ -75,25 +75,56 @@ public class coordinator {
                         int newPort = Integer.parseInt(parts[1]);
                         String newIp = clientSocket.getInetAddress().getHostAddress();
                         int uid = Integer.parseInt(parts[3]);
-                        // Update user info and reconnect
+
+                        //save the offline time
                         Participant user = userStatus.get(uid);
+                        Instant lastOffline = user.lastDisconnect;
+
+                        //Update thread b for client
                         user.updateConnection(newPort, newIp);
                         user.reconnect();
-                        try {
-                            BufferedReader logReader = new BufferedReader(new FileReader("log.txt"));
-                            String logLine;
-                            while ((logLine = logReader.readLine()) != null) {
-                               if (Instant.parse(logLine.split(" ")[1]).isAfter(user.lastDisconnect) && Instant.parse(logLine.split(" ")[1]).isAfter(Instant.now().minusSeconds(threshold))) {
-                                    Socket socket = new Socket(user.getIp(), user.getPort());
-                                    PrintWriter participantOut = new PrintWriter(socket.getOutputStream(), true);
-                                    participantOut.println(logLine);
-                                    socket.close();
+
+                        if (lastOffline != null) {
+                            System.out.println("User " + uid + " reconnected. Last offline at: " + lastOffline);
+
+                            try {
+                                File logFile = new File("log.txt");
+                                if (logFile.exists()) { // Ensure the file  exists (maybe on new run there is no file yet)
+                                    BufferedReader logReader = new BufferedReader(new FileReader(logFile));
+                                    String logLine;
+
+                                    while ((logLine = logReader.readLine()) != null) {
+                                        //Fix to prevent empty line crashes
+                                        if (logLine.trim().isEmpty()) {
+                                            continue;
+                                        }
+
+                                        String[] logParts = logLine.split(" ");
+
+
+                                        Instant msgTime = Instant.parse(logParts[1]);
+                                        String msgText = logParts[0];
+
+                                        //Check times for message sending
+                                        if (msgTime.isAfter(lastOffline)
+                                                && msgTime.isAfter(Instant.now().minusSeconds(threshold))) {
+                                            Socket socket = new Socket(user.getIp(), user.getPort());
+                                            PrintWriter participantOut = new PrintWriter(socket.getOutputStream(),
+                                                    true);
+
+                                            //
+                                            participantOut.println(logLine);
+                                            socket.close();
+                                        }
+                                    }
+                                    logReader.close();
                                 }
+                            } catch (Exception e) {
+                                System.out.println("Error reading log file: " + e.getMessage());
+                                e.printStackTrace();
                             }
-                        } 
-                        catch (IOException e) {
-                            System.out.println("Error reading log file: " + e.getMessage());
-                            e.printStackTrace();
+                        } else {
+                            System.out.println("User already online, updated Thread B port to " + newPort);
                         }
                         break;
                     case "msend":
