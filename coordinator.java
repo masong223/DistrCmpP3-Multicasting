@@ -140,8 +140,14 @@ public class coordinator {
                         }
                         break;
                     case "msend":
+                        if (!(userStatus.contains(Integer.parseInt(parts[2])))) {
+                            System.out.println("User " + parts[2] + " is not registered and cannot send messages.");
+                            out.println("ACK");
+                            break;
+                        }
                         if (!userStatus.get(Integer.parseInt(parts[2])).isConnected) {
                             System.out.println("User " + parts[2] + " is currently offline and cannot send messages.");
+                            out.println("ACK");
                             break;
                         }
                         out.println("ACK");
