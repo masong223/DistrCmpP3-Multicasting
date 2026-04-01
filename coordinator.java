@@ -82,11 +82,16 @@ public class coordinator {
                         int newPort = Integer.parseInt(parts[1]);
                         String newIp = clientSocket.getInetAddress().getHostAddress();
                         int uid = Integer.parseInt(parts[3]);
-
+                        if (!userStatus.containsKey(uid)) {
+                            System.out.println("User " + uid + " not found for reconnection.");
+                            break;
+                        }
                         //save the offline time
+                        
                         Participant user = userStatus.get(uid);
+                        
                         Instant lastOffline = user.lastDisconnect;
-
+                        
                         //Update thread b for client
                         user.updateConnection(newPort, newIp);
                         user.reconnect();
