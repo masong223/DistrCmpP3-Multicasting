@@ -140,6 +140,10 @@ public class coordinator {
                         }
                         break;
                     case "msend":
+                        if (!userStatus.get(Integer.parseInt(parts[2])).isConnected) {
+                            System.out.println("User " + parts[2] + " is currently offline and cannot send messages.");
+                            break;
+                        }
                         out.println("ACK");
                         Path pwd = Path.of("log.txt");
                         try {

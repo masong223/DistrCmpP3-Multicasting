@@ -177,7 +177,7 @@ public class client {
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
 
-                        // Send command
+                        // Send command. Messages cannot contain spaces.
                         clientOut.println("msend " + inputToServer.substring(inputToServer.indexOf(" ") + 1) + " " + userId);
 
                         // Wait for ACK from server
