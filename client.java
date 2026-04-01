@@ -183,9 +183,10 @@ public class client {
                         // Wait for ACK from server
                         String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
-                            System.out.println("Successfully send message");
-                        } else {
-                            System.out.println("Failed to send message. User is disconnected.");
+                            System.out.println("Message sent.");
+                        }
+                        if (serverResponse.contains("Offline")) {
+                            System.out.println("Message failed to send. User is currently offline.");
                         }
 
                         clientOut.close();

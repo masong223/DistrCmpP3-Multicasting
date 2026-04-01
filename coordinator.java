@@ -150,7 +150,7 @@ public class coordinator {
                             out.println("ACK");
                             break;
                         }
-                        out.println("ACK");
+                        
                         Path pwd = Path.of("log.txt");
                         try {
                             if (!Files.exists(pwd)) {
