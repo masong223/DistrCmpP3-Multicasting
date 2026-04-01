@@ -141,10 +141,17 @@ public class client {
                     }
                 } else if (parts[0].equals("reconnect")) {
                     // SERVER PARAM CONFIG FOR RECONNECT: "reconnect, port #, ip, userId"
+                    if (parts.length < 2) {
+                        System.out.println("Command requires a port number");
+                        continue;
+                    }
+
                     int bListenPort = Integer.parseInt(parts[1]);
                     threadInit = new ThreadB(userId, logFile, bListenPort);
                     Thread listenerThread = new Thread(threadInit);
                     listenerThread.start();
+
+
 
                     try {
                         String ip = InetAddress.getLocalHost().getHostAddress(); // Get IP
