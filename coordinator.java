@@ -112,8 +112,8 @@ public class coordinator {
                                             PrintWriter participantOut = new PrintWriter(socket.getOutputStream(),
                                                     true);
 
-                                            //
-                                            participantOut.println(logLine);
+                                            //Only send text not timestamp
+                                            participantOut.println(msgText);
                                             socket.close();
                                         }
                                     }
