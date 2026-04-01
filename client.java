@@ -184,6 +184,8 @@ public class client {
                         String serverResponse = clientIn.readLine();
                         if (serverResponse.contains("ACK")) {
                             System.out.println("Successfully send message");
+                        } else {
+                            System.out.println("Failed to send message. User is disconnected.");
                         }
 
                         clientOut.close();
