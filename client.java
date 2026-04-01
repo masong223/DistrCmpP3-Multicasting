@@ -181,17 +181,20 @@ public class client {
                         clientOut.println("msend " + inputToServer.substring(inputToServer.indexOf(" ") + 1) + " " + userId);
 
                         // Wait for ACK from server
-                        String serverResponse = clientIn.readLine();
-                        if (serverResponse.contains("ACK")) {
-                            System.out.println("Message sent.");
-                        }
-                        if (serverResponse.contains("Offline")) {
-                            System.out.println("Message failed to send. User is currently offline.");
-                        }
+                        String serverResponse = clientIn.readLine().trim();
+                        if (serverResponse.equals("ACK e")) {
+                            clientOut.close();
+                            clientIn.close();
+                            coordSocket.close();
+                            System.out.println("Message not sent, not registered or disconnected.");
+                        } else if (serverResponse.equals("ACK")) {
+                            System.out.println("Message sent");
+                        
 
                         clientOut.close();
                         clientIn.close();
                         coordSocket.close();
+                        }
                     } catch (Exception e) {
                     }
                 }

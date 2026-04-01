@@ -140,17 +140,17 @@ public class coordinator {
                         }
                         break;
                     case "msend":
-                        if (!(userStatus.contains(Integer.parseInt(parts[2])))) {
+                        if (!(userStatus.containsKey(Integer.parseInt(parts[2])))) {
                             System.out.println("User " + parts[2] + " is not registered and cannot send messages.");
-                            out.println("ACK");
+                            out.println("ACK e");
                             break;
                         }
                         if (!userStatus.get(Integer.parseInt(parts[2])).isConnected) {
                             System.out.println("User " + parts[2] + " is currently offline and cannot send messages.");
-                            out.println("ACK");
+                            out.println("ACK e");
                             break;
                         }
-                        
+                        out.println("ACK");
                         Path pwd = Path.of("log.txt");
                         try {
                             if (!Files.exists(pwd)) {
@@ -159,7 +159,7 @@ public class coordinator {
                         } catch (IOException e) {
                             System.out.println("Error: " + e.getMessage());
                         }
-                        String text = message.substring(6, message.length());
+                        String text = parts[1];
                         try {
                             Files.writeString(pwd, text + " " + Instant.now() + "\n", StandardOpenOption.APPEND);
                         } catch (IOException e) {
