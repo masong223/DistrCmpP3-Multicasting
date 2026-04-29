@@ -54,7 +54,7 @@ public class coordinator {
                 switch (message.split(" ")[0]) {
                     case "register":
                         out.println("ACK");
-                        String userIp = clientSocket.getInetAddress().getHostAddress();
+                        String userIp = parts[2];
                         System.out.println("Received registration from user " + parts[3] + " at IP " + userIp);
                         int userId = Integer.parseInt(parts[3]);
                         int bPort = Integer.parseInt(parts[1]);
@@ -80,7 +80,7 @@ public class coordinator {
                         out.println("ACK");
                         // Get info from message
                         int newPort = Integer.parseInt(parts[1]);
-                        String newIp = clientSocket.getInetAddress().getHostAddress();
+                        String newIp = parts[2];
                         int uid = Integer.parseInt(parts[3]);
                         if (!userStatus.containsKey(uid)) {
                             System.out.println("User " + uid + " not found for reconnection.");

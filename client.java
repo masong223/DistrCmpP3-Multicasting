@@ -61,10 +61,12 @@ public class client {
 
                     // Get local IP
                     try {
-                        String ip = InetAddress.getLocalHost().getHostAddress(); // Get IP
+
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1])); //Trying to connect to coordinator before getting IP
+                        String ip = coordSocket.getLocalAddress().getHostAddress(); // Get IP from socket instead of from message
 
                         // Start up connection to server
-                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
                         
@@ -154,10 +156,11 @@ public class client {
 
 
                     try {
-                        String ip = InetAddress.getLocalHost().getHostAddress(); // Get IP
+                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1])); //Set up socket first
+                        String ip = coordSocket.getLocalAddress().getHostAddress(); // Then get IP from socket instead from message
 
                         // Start up connection to server
-                        Socket coordSocket = new Socket(coordinatorInfo[0], Integer.parseInt(coordinatorInfo[1]));
+                        
                         PrintWriter clientOut = new PrintWriter(coordSocket.getOutputStream(), true);
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));
 
